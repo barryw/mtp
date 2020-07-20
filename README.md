@@ -72,6 +72,6 @@ Once you're done, you can tear everything down with `make destroy`. This will no
 
 #### Notes
 
-Running this in us-east-1 runs the risk of constantly recreating the ACM certificate due to a bug: https://github.com/terraform-providers/terraform-provider-aws/issues/8531
+Multiple runs of Terraform may result in the ACM cert being re-created due a bug in how the SANs are ordered: https://github.com/terraform-providers/terraform-provider-aws/issues/8531
 
 ACM certs also appear to take much longer to validate in us-east-1, which can cause Terraform to timeout. The Oregon region (us-west-2) has been flawless.

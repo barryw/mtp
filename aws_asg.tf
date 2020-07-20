@@ -59,3 +59,55 @@ resource "aws_autoscaling_attachment" "application" {
   autoscaling_group_name = aws_autoscaling_group.application.id
   alb_target_group_arn   = aws_alb_target_group.application.arn
 }
+
+resource "aws_autoscaling_policy" "app-scale-up" {
+  name                   = "${var.product}-${var.environment}-scale-up"
+  scaling_adjustment     = 1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.application.name
+}
+
+resource "aws_cloudwatch_metric_alarm" "high-cpu" {
+  alarm_name          = "${var.product}-${var.environment}-high-cpu"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+  alarm_description   = "Monitor for high CPU usage so that we can scale up."
+  alarm_actions = [
+    aws_autoscaling_policy.app-scale-up.arn
+  ]
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.application.name
+  }
+}
+
+resource "aws_autoscaling_policy" "app-scale-down" {
+  name                   = "${var.product}-${var.environment}-scale-down"
+  scaling_adjustment     = -1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.application.name
+}
+
+resource "aws_cloudwatch_metric_alarm" "low-cpu" {
+  alarm_name          = "${var.product}-${var.environment}-low-cpu"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 20
+  alarm_description   = "Monitor for low CPU usage so that we can scale down."
+  alarm_actions = [
+    aws_autoscaling_policy.app-scale-down.arn
+  ]
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.application.name
+  }
+}

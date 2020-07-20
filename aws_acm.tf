@@ -1,5 +1,5 @@
 /* Create our ACM cert */
-/* NOTE: In us-east-1, there's an issue where SAN may be returned in a different order each time causing Terraform to */
+/* NOTE: There's an issue where SAN may be returned in a different order each time causing Terraform to */
 /* re-create the certificate. https://github.com/terraform-providers/terraform-provider-aws/issues/8531 */
 resource "aws_acm_certificate" "cert" {
   domain_name               = var.public_route53_zone
